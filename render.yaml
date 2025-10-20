@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: ashby-slack-feedback
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ashby-feedback-db
+          property: connectionString
+      - key: ASHBY_API_KEY
+        sync: false
+      - key: ASHBY_WEBHOOK_SECRET
+        sync: false
+      - key: SLACK_BOT_TOKEN
+        sync: false
+      - key: SLACK_SIGNING_SECRET
+        sync: false
+      - key: LOG_LEVEL
+        value: INFO
+    healthCheckPath: /health
+
+databases:
+  - name: ashby-feedback-db
+    databaseName: ashby_feedback
+    plan: starter
+    postgresMajorVersion: 15

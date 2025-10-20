@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Apply database schema
+        run: |
+          psql postgresql://postgres:test_password@localhost:5432/test_db -f database/schema.sql
+
+      - name: Verify app imports
+        env:
+          DATABASE_URL: postgresql://postgres:test_password@localhost:5432/test_db
+          ASHBY_WEBHOOK_SECRET: test_webhook_secret_for_ci
+          ASHBY_API_KEY: test_api_key_for_ci
+          SLACK_BOT_TOKEN: xoxb-test-token
+          SLACK_SIGNING_SECRET: test_signing_secret
+        run: |
+          python -c "from app.main import app; print('✓ App imports OK')"
+
+      - name: Lint with ruff
+        run: |
+          ruff check app/
+
+      - name: Check formatting with ruff
+        run: |
+          ruff format app/ --check
+
+      - name: Type check with pyright
+        run: |
+          pyright app/
+        continue-on-error: true # Don't fail on type errors yet
+
+      - name: Run tests with coverage
+        env:
+          DATABASE_URL: postgresql://postgres:test_password@localhost:5432/test_db
+          ASHBY_WEBHOOK_SECRET: test_webhook_secret_for_ci
+          ASHBY_API_KEY: test_api_key_for_ci
+          SLACK_BOT_TOKEN: xoxb-test-token
+          SLACK_SIGNING_SECRET: test_signing_secret
+          LOG_LEVEL: DEBUG
+        run: |
+          pytest --cov=app --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+        continue-on-error: true # Don't fail if codecov upload fails
+

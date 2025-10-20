@@ -1,0 +1,19 @@
+line-length = 100
+target-version = "py312"
+
+[lint]
+select = [
+    "F",  # pyflakes
+    "E",  # pycodestyle errors
+    "I",  # isort
+    "N",  # pep8-naming
+    "UP",  # pyupgrade
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "N815",  # Allow mixedCase in Pydantic models (Ashby API uses camelCase)
+]
+
+[lint.isort]
+known-first-party = ["app"]
+

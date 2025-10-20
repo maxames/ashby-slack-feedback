@@ -1,0 +1,31 @@
+[tool.pyright]
+typeCheckingMode = "strict"
+stubPath = "stubs"
+reportMissingTypeStubs = true
+reportUnknownMemberType = true
+reportUntypedFunctionDecorator = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["F", "E", "I", "N", "UP", "B", "PL"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--tb=short",
+    "--cov=app",
+    "--cov-report=term-missing",
+]
+

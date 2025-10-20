@@ -1,0 +1,38 @@
+# Docker
+.dockerignore
+
+# Don't include .env in Docker image (use env_file instead)
+.env
+.env.*
+
+# Development files
+.git
+.github
+.vscode
+.idea
+*.md
+docs/
+
+# Python artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# Tests
+tests/
+.pytest_cache
+.coverage
+htmlcov/
+
+# Temp files
+temp/
+*.log
+.DS_Store
+

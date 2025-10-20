@@ -1,0 +1,25 @@
+display_information:
+  name: Ashby Interview Feedback
+  description: Automated interview feedback reminders
+  background_color: "#2c2d30"
+
+features:
+  bot_user:
+    display_name: Feedback Bot
+    always_online: true
+
+oauth_config:
+  scopes:
+    bot:
+      - chat:write
+      - users:read
+      - users:read.email
+      - files.remote:write
+
+settings:
+  interactivity:
+    is_enabled: true
+    request_url: https://your-domain.com/slack/interactions
+
+  event_subscriptions:
+    bot_events: []
