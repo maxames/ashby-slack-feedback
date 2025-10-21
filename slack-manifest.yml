@@ -14,12 +14,13 @@ oauth_config:
       - chat:write
       - users:read
       - users:read.email
-      - files.remote:write
 
 settings:
   interactivity:
     is_enabled: true
     request_url: https://your-domain.com/slack/interactions
-
   event_subscriptions:
+    request_url: https://your-domain.com/slack/events
     bot_events: []
+  org_deploy_enabled: false
+  socket_mode_enabled: false
