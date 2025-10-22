@@ -93,9 +93,7 @@ async def handle_open_modal(payload: dict[str, Any], action: dict[str, Any]) -> 
         candidate_id = button_data["candidate_id"]
 
         # Get feedback form definition (business logic)
-        form_def: FeedbackFormTD | None = await get_feedback_form_definition(
-            form_definition_id
-        )
+        form_def: FeedbackFormTD | None = await get_feedback_form_definition(form_definition_id)
 
         if not form_def:
             logger.error("form_definition_not_found", form_id=form_definition_id)
@@ -126,17 +124,11 @@ async def handle_open_modal(payload: dict[str, Any], action: dict[str, Any]) -> 
             "form_definition_id": form_definition_id,
             "application_id": application_id,
             "interviewer_id": interviewer_id,
-            "interview_title": (
-                interview_row["interview_title"] if interview_row else "Interview"
-            ),
-            "start_time": (
-                interview_row["start_time"] if interview_row else datetime.now(UTC)
-            ),
+            "interview_title": (interview_row["interview_title"] if interview_row else "Interview"),
+            "start_time": (interview_row["start_time"] if interview_row else datetime.now(UTC)),
             "end_time": interview_row["end_time"] if interview_row else None,
             "meeting_link": interview_row["meeting_link"] if interview_row else None,
-            "instructions_plain": (
-                interview_row["instructions_plain"] if interview_row else None
-            ),
+            "instructions_plain": (interview_row["instructions_plain"] if interview_row else None),
         }
 
         # Build modal view with candidate and interview context
@@ -148,9 +140,7 @@ async def handle_open_modal(payload: dict[str, Any], action: dict[str, Any]) -> 
         )
 
         # Open modal using trigger_id from button click (Slack-specific)
-        await slack.slack_client.open_modal(
-            trigger_id=payload["trigger_id"], view=modal_view
-        )
+        await slack.slack_client.open_modal(trigger_id=payload["trigger_id"], view=modal_view)
 
         logger.info("feedback_modal_opened", event_id=event_id)
 
@@ -214,9 +204,7 @@ async def handle_feedback_submission(payload: dict[str, Any]) -> None:
 
         # Extract form values and transform for Ashby (Slack-specific)
         state_values = payload["view"]["state"]["values"]
-        field_submissions = extract_field_submissions_for_ashby(
-            state_values, form_definition
-        )
+        field_submissions = extract_field_submissions_for_ashby(state_values, form_definition)
 
         # Submit feedback to Ashby (business logic)
         await feedback.submit_feedback(
