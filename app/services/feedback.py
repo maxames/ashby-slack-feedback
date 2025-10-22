@@ -42,7 +42,9 @@ async def load_draft(event_id: str, interviewer_id: str) -> FormValuesDictTD:
     return {}
 
 
-async def save_draft(event_id: str, interviewer_id: str, form_values: FormValuesDictTD) -> None:
+async def save_draft(
+    event_id: str, interviewer_id: str, form_values: FormValuesDictTD
+) -> None:
     """
     Save or update feedback draft in database.
 
@@ -125,6 +127,7 @@ async def submit_feedback(
             "formDefinitionId": form_definition_id,
             "applicationId": application_id,
             "userId": interviewer_id,
+            "interviewEventId": event_id,
             "feedbackForm": {"fieldSubmissions": field_submissions},
         },
     )
