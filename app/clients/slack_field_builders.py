@@ -56,13 +56,14 @@ def build_richtext_field(
         "type": "plain_text_input",
         "action_id": field_path,
         "multiline": True,
-        "dispatch_action": True,
         "dispatch_action_config": {"trigger_actions_on": ["on_enter_pressed"]},
     }
     if draft_value:
         # Extract plain text from Ashby RichText format if needed
         text_value = (
-            draft_value.get("value", draft_value) if isinstance(draft_value, dict) else draft_value
+            draft_value.get("value", draft_value)
+            if isinstance(draft_value, dict)
+            else draft_value
         )
         input_block["element"]["initial_value"] = str(text_value) if text_value else ""
 
@@ -115,7 +116,9 @@ def build_boolean_field(
     input_block["element"] = {
         "type": "checkboxes",
         "action_id": field_path,
-        "options": [{"text": {"type": "plain_text", "text": label_text}, "value": "true"}],
+        "options": [
+            {"text": {"type": "plain_text", "text": label_text}, "value": "true"}
+        ],
     }
     if draft_value:
         input_block["element"]["initial_options"] = [
@@ -137,7 +140,9 @@ def build_score_field(
             "text": {"type": "plain_text", "text": f"{i} - {label}"},
             "value": str(i),
         }
-        for i, label in enumerate(["Strong No Hire", "No Hire", "Hire", "Strong Hire"], start=1)
+        for i, label in enumerate(
+            ["Strong No Hire", "No Hire", "Hire", "Strong Hire"], start=1
+        )
     ]
 
     input_block["element"] = {
@@ -147,7 +152,9 @@ def build_score_field(
     }
 
     if draft_value:
-        score_value = draft_value.get("score") if isinstance(draft_value, dict) else draft_value
+        score_value = (
+            draft_value.get("score") if isinstance(draft_value, dict) else draft_value
+        )
         if score_value:
             input_block["element"]["initial_option"] = next(
                 (opt for opt in options if opt["value"] == str(score_value)), None
@@ -216,7 +223,9 @@ def build_multiselect_field(
     return input_block
 
 
-def _create_input_block(field: FormFieldTD, field_config: FormFieldConfigTD) -> dict[str, Any]:
+def _create_input_block(
+    field: FormFieldTD, field_config: FormFieldConfigTD
+) -> dict[str, Any]:
     """Create base input block structure with label and optional flag."""
     field_path = field["path"]
     label_text = field.get("title", field.get("humanReadablePath", "Field"))
@@ -274,7 +283,9 @@ def build_input_block_from_field(
     builder = FIELD_BUILDERS.get(field_type)
 
     if not builder:
-        logger.warning("unsupported_field_type", field_type=field_type, path=field["path"])
+        logger.warning(
+            "unsupported_field_type", field_type=field_type, path=field["path"]
+        )
         return None
 
     return builder(field, field_config, draft_value)
