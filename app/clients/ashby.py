@@ -49,15 +49,41 @@ class AshbyClient:
         logger.info("ashby_api_request", endpoint=endpoint)
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=json_data, headers=self.headers) as response:
+            async with session.post(
+                url, json=json_data, headers=self.headers
+            ) as response:
                 response.raise_for_status()
                 result: dict[str, Any] = await response.json()
 
                 if not result.get("success"):
+                    # Extract error from multiple possible fields
+                    error_msg = (
+                        result.get("errors") or result.get("error") or "Unknown error"
+                    )
+                    error_info = result.get("errorInfo", {})
+
                     logger.error(
                         "ashby_api_error",
                         endpoint=endpoint,
-                        error=result.get("error"),
+                        errors=error_msg,
+                        error_code=(
+                            error_info.get("code")
+                            if isinstance(error_info, dict)
+                            else None
+                        ),
+                        request_id=(
+                            error_info.get("requestId")
+                            if isinstance(error_info, dict)
+                            else None
+                        ),
+                    )
+
+                    # Raise exception to stop execution
+                    error_display = (
+                        error_msg if isinstance(error_msg, str) else str(error_msg)
+                    )
+                    raise Exception(
+                        f"Ashby API request failed ({endpoint}): {error_display}"
                     )
 
                 return result
