@@ -127,10 +127,14 @@ class TestSlackPayloadExtraction:
     def test_extract_ashby_field_submissions(self):
         """Test converting Slack values to Ashby format."""
         from app.clients.slack_parsers import extract_field_submissions_for_ashby
-        from tests.fixtures.sample_payloads import SLACK_MODAL_SUBMISSION
+        from tests.fixtures.sample_payloads import (
+            ASHBY_FEEDBACK_FORM,
+            SLACK_MODAL_SUBMISSION,
+        )
 
         state_values = SLACK_MODAL_SUBMISSION["view"]["state"]["values"]
-        submissions = extract_field_submissions_for_ashby(state_values)
+        form_definition = ASHBY_FEEDBACK_FORM["results"]
+        submissions = extract_field_submissions_for_ashby(state_values, form_definition)
 
         # Should return list of field submissions
         assert isinstance(submissions, list)

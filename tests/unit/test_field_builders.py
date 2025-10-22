@@ -220,7 +220,7 @@ class TestBuildRichTextField:
 
         assert result["element"]["type"] == "plain_text_input"
         assert result["element"]["multiline"] is True
-        assert result["element"]["dispatch_action"] is True
+        # dispatch_action was deprecated and removed, only dispatch_action_config remains
         assert "dispatch_action_config" in result["element"]
         assert result["element"]["dispatch_action_config"]["trigger_actions_on"] == [
             "on_enter_pressed"
