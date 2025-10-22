@@ -4,8 +4,29 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.types.ashby import FieldSubmissionTD
+from app.types.ashby import FeedbackFormTD, FieldSubmissionTD
 from app.types.slack import FormValuesDictTD
+
+
+def build_field_type_map(form_definition: FeedbackFormTD) -> dict[str, str]:
+    """
+    Build a map of field_path → field_type from form definition.
+
+    Args:
+        form_definition: Ashby form definition
+
+    Returns:
+        Dict mapping field paths to their types (e.g., {"feedback": "RichText"})
+    """
+    field_type_map = {}
+    form_def = form_definition.get("formDefinition", form_definition)
+
+    for section in form_def.get("sections", []):
+        for field_config in section.get("fields", []):
+            field = field_config["field"]
+            field_type_map[field["path"]] = field["type"]
+
+    return field_type_map
 
 
 def extract_form_values(state_values: dict[str, Any]) -> FormValuesDictTD:
@@ -61,6 +82,7 @@ def extract_form_values(state_values: dict[str, Any]) -> FormValuesDictTD:
 
 def extract_field_submissions_for_ashby(
     state_values: dict[str, Any],
+    form_definition: FeedbackFormTD,
 ) -> list[FieldSubmissionTD]:
     """
     Extract form values and convert to Ashby API format.
@@ -69,17 +91,23 @@ def extract_field_submissions_for_ashby(
 
     Args:
         state_values: Slack modal state values dict
+        form_definition: Ashby form definition for field type mapping
 
     Returns:
         List of field submissions for Ashby API
     """
     field_submissions: list[FieldSubmissionTD] = []
 
+    # Build field type lookup map
+    field_type_map = build_field_type_map(form_definition)
+
     for block_id, actions in state_values.items():
         if not block_id.startswith("field_"):
             continue
 
         field_path = block_id.replace("field_", "")
+        field_type = field_type_map.get(field_path)  # Get actual type
+
         _, action_data = next(iter(actions.items()))
         action_type = action_data["type"]
 
@@ -87,8 +115,8 @@ def extract_field_submissions_for_ashby(
 
         if action_type == "plain_text_input":
             value = action_data.get("value")
-            # For RichText fields, wrap in Ashby format
-            if value and "_richtext" in field_path.lower():
+            # Use actual field type instead of guessing
+            if value and field_type == "RichText":
                 value = {"type": "PlainText", "value": value}
 
         elif action_type == "email_text_input":
@@ -108,8 +136,8 @@ def extract_field_submissions_for_ashby(
         elif action_type == "static_select":
             selected = action_data.get("selected_option")
             if selected:
-                # Check if it's a Score field
-                if "score" in field_path.lower():
+                # Use actual field type instead of guessing
+                if field_type == "Score":
                     value = {"score": int(selected["value"])}
                 else:
                     value = selected["value"]

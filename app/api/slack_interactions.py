@@ -204,9 +204,19 @@ async def handle_feedback_submission(payload: dict[str, Any]) -> None:
         interviewer_id = metadata["interviewer_id"]
         slack_user_id = payload["user"]["id"]
 
+        # Get form definition for field type mapping
+        from app.services.sync import get_feedback_form_definition
+
+        form_definition = await get_feedback_form_definition(form_definition_id)
+
+        if not form_definition:
+            raise Exception(f"Form definition not found: {form_definition_id}")
+
         # Extract form values and transform for Ashby (Slack-specific)
         state_values = payload["view"]["state"]["values"]
-        field_submissions = extract_field_submissions_for_ashby(state_values)
+        field_submissions = extract_field_submissions_for_ashby(
+            state_values, form_definition
+        )
 
         # Submit feedback to Ashby (business logic)
         await feedback.submit_feedback(
